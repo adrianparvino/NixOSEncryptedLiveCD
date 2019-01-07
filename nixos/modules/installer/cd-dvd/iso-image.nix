@@ -503,13 +503,6 @@ in
         options = [ "mode=0755" ];
       };
 
-    boot.initrd.luks.forceLuksSupportInInitrd = true;
-    boot.initrd.postMountCommands = ''
-      cryptsetup luksOpen /mnt-root/iso/nix-store.squashfs.luks squashfs
-      mountFS /dev/mapper/squashfs /nix/.ro-store "" squashfs
-      mountFS unionfs /nix/store "allow_other,cow,nonempty,chroot=/mnt-root,max_files=32768,hide_meta_files,dirs=/nix/.rw-store=rw:/nix/.ro-store=ro" unionfs-fuse
-    '';
-
     # Note that /dev/root is a symlink to the actual root device
     # specified on the kernel command line, created in the stage 1
     # init script.
@@ -519,17 +512,24 @@ in
         noCheck = true;
       };
 
+    fileSystems."/nix/.ro-store" =
+      { fsType = "squashfs";
+        device = "/iso/nix-store.squashfs.luks";
+        luksTarget = "squashfs";
+        neededForBoot = true;
+      };
+
     fileSystems."/nix/.rw-store" =
       { fsType = "tmpfs";
         options = [ "mode=0755" ];
         neededForBoot = true;
       };
 
-    # fileSystems."/nix/store" =
-    #   { fsType = "unionfs-fuse";
-    #     device = "unionfs";
-    #     options = [ "allow_other" "cow" "nonempty" "chroot=/mnt-root" "max_files=32768" "hide_meta_files" "dirs=/nix/.rw-store=rw:/nix/.ro-store=ro" ];
-    #   };
+    fileSystems."/nix/store" =
+      { fsType = "unionfs-fuse";
+        device = "unionfs";
+        options = [ "allow_other" "cow" "nonempty" "chroot=/mnt-root" "max_files=32768" "hide_meta_files" "dirs=/nix/.rw-store=rw:/nix/.ro-store=ro" ];
+      };
 
     boot.initrd.availableKernelModules = [ "squashfs" "iso9660" "uas" ];
 
@@ -626,7 +626,7 @@ in
 
     # Add vfat support to the initrd to enable people to copy the
     # contents of the CD to a bootable USB stick.
-    boot.initrd.supportedFilesystems = [ "vfat" "unionfs-fuse" ];
+    boot.initrd.supportedFilesystems = [ "vfat" ];
 
   };
 
