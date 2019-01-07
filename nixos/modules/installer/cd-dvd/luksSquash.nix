@@ -5,11 +5,12 @@
 , kmod
 }:
 
-vmTools.runInLinuxVM ((runCommand "luksSquash"
+vmTools.runInLinuxVM (runCommand "luksSquash"
   {
-    SQUASHFS = (import <nixpkgs/nixos> { configuration = ./iso.nix; }).config.system.build.squashfsStore;
+    SQUASHFS = (import <nixpkgs/nixos> { configuration = <nixos-config>; }).config.system.build.squashfsStore;
 
     nativeBuildInputs = [ utillinux cryptsetup kmod ];
+    __impure = true;
   }
   ''
     BLOCKS=$(du -B 512 $(realpath $SQUASHFS) | cut -d $'\t' -f1)
@@ -26,4 +27,4 @@ vmTools.runInLinuxVM ((runCommand "luksSquash"
     dd if=$SQUASHFS of=/dev/mapper/cryptbackup bs=512
 
     cryptsetup luksClose cryptbackup
-  '').overrideAttrs (_: { __impure = true; }))
+  '')

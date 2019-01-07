@@ -272,8 +272,8 @@ in rec {
       mkdir -p $dst/images/callouts
       cp ${docbook_xsl_ns}/xml/xsl/docbook/images/callouts/*.svg $dst/images/callouts/
 
-      cp ${../../../doc/style.css} $dst/style.css
-      cp ${../../../doc/overrides.css} $dst/overrides.css
+      cp ${<nixpkgs/doc/style.css>} $dst/style.css
+      cp ${<nixpkgs/doc/overrides.css>} $dst/overrides.css
       cp -r ${pkgs.documentation-highlighter} $dst/highlightjs
 
       mkdir -p $out/nix-support

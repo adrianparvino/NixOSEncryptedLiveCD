@@ -10,9 +10,9 @@ with lib;
     [ ./iso-image.nix
 
       # Profiles of this basic installation CD.
-      <nixpkgs/nixos/modules/profiles/all-hardware.nix>
-      <nixpkgs/nixos/modules/profiles/base.nix>
-      <nixpkgs/nixos/modules/profiles/installation-device.nix>
+      ../../profiles/all-hardware.nix
+      ../../profiles/base.nix
+      ../../profiles/installation-device.nix
     ];
 
   # ISO naming.

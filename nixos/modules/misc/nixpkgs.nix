@@ -65,7 +65,7 @@ in
             inherit (cfg) config overlays localSystem crossSystem;
           }
         '';
-      default = import ../../.. {
+      default = import <nixpkgs> {
         inherit (cfg) config overlays localSystem crossSystem;
       };
       type = pkgsType;
