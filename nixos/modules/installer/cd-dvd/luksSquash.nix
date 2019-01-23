@@ -18,8 +18,7 @@ vmTools.runInLinuxVM (runCommand "luksSquash"
     modprobe loop
 
     rmdir $out
-    # dd if=/dev/zero of=$out bs=512 count=$(( $BLOCKS + 8192 ))
-    fallocate -x -l $(( 512 * ($BLOCKS + 8192) )) $out
+    fallocate -x -l $(( 512 * ($BLOCKS + 4096) )) $out
 
     cryptsetup luksFormat $out <<< PASSPHRASE
     cryptsetup luksOpen $out cryptbackup <<< PASSPHRASE
