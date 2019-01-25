@@ -565,7 +565,7 @@ in
         { source = config.system.build.initialRamdisk + "/" + config.system.boot.loader.initrdFile;
           target = "/boot/" + config.system.boot.loader.initrdFile;
         }
-        { source = pkgs.callPackage ./luksSquash.nix {};
+        { source = pkgs.callPackage ../../../lib/wrap-luks.nix {} config.system.build.squashfsStore;
           target = "/nix-store.squashfs.luks";
         }
         { source = "${pkgs.syslinux}/share/syslinux";
