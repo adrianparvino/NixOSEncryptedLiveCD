@@ -20,7 +20,7 @@ vmTools.runInLinuxVM (runCommand "wrap-luks"
     modprobe loop
 
     rmdir $out
-    fallocate -x -l $(( 512 * ($BLOCKS + 4096) )) $out
+    truncate -s $(( 512 * ($BLOCKS + 4096) )) $out
 
     # A Nix way to change the passphrase is purposely not added,
     # as the passphrase will be added to the /nix/store.
