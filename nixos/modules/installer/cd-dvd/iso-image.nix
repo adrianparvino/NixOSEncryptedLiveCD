@@ -547,6 +547,7 @@ in
     # Create the squashfs image that contains the Nix store.
     system.build.squashfsStore = pkgs.callPackage <nixpkgs/nixos/lib/make-squashfs.nix> {
       storeContents = config.isoImage.storeContents;
+      quick = true;
     };
 
     # Individual files to be included on the CD, outside of the Nix
