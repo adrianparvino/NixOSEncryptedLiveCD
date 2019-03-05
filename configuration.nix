@@ -13,9 +13,6 @@ with lib;
       ./args.nix
     ];
 
-  boot.kernelParams = [
-  ];
-
   fileSystems."/" =
     { device = config.rootdevice;
       fsType = "ext4";
