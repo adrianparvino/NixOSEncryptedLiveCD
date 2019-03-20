@@ -13,6 +13,9 @@ with lib;
       ./args.nix
     ];
 
+  services.duplicity-backup.enableRestore = true;
+  services.duplicity-backup.target = "/mnt";
+
   fileSystems."/" =
     { device = config.rootdevice;
       fsType = "ext4";

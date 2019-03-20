@@ -37,7 +37,6 @@ else
     truncate -s 8G $out
 fi
 
-# Create file if it is not a block device
 {
     echo o    # Create a new empty GPT partition table
 
@@ -87,15 +86,20 @@ mkdir "${out}mnt/boot"
 mount "${LOOP_DEVICE}p1" "${out}mnt/boot"
 
 read -r -d '' CONFIGURATION <<EOF
-{ imports = [ ./configuration.nix ];
+{
+  imports =
+    [ ./configuration.nix
+      /etc/nixos/duplicity-backup-config.nix
+    ];
 
   rootdevice="$ROOT_DEV";
   bootdevice="$BOOT_DEV";
 }
 EOF
 
-
 CLOSURE="$(nix-build '<nixpkgs/nixos>' -A system --no-out-link --arg configuration "$CONFIGURATION")" #-I nixpkgs/nixos=nixos
 
 grub-install --target=i386-pc --boot-directory "${out}mnt/boot" "$out"
 nixos-install --system "$CLOSURE" --root $(realpath "${out}mnt") --no-root-passwd
+
+cp --parents -r /var/keys/duplicity "${out}mnt"
