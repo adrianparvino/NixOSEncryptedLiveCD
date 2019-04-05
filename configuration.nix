@@ -9,6 +9,7 @@ with lib;
   imports =
     [ <nixpkgs/nixos/modules/profiles/all-hardware.nix>
       <nixpkgs/nixos/modules/profiles/base.nix>
+      <nixpkgs/nixos/modules/installer/cd-dvd/channel.nix>
 
       ./args.nix
     ];
@@ -30,6 +31,40 @@ with lib;
   boot.loader.grub.device = "nodev";
 
   users.users.root.initialHashedPassword = "";
+
+  boot.extraTTYs = [ "tty7" ];
+
+  systemd.services.baka = {
+    after = [ "default.target" ];
+    wantedBy = [ "default.target" ];
+
+    serviceConfig = {
+      StandardInput = "tty";
+      StandardOutput = "tty";
+      StandardError = "journal";
+      TTYPath = "/dev/tty7";
+      # TTYReset = "yes";
+      # TTYVTDisallocate = true;
+    };
+    environment.NIX_PATH = builtins.concatStringsSep ":" config.nix.nixPath;
+
+    path = with pkgs; let
+      inherit (config.system.build) nixos-install nixos-enter nixos-generate-config;
+    in [
+      kbd
+      dialog
+      utillinux
+      dosfstools
+      e2fsprogs
+      nix
+      nixos-install
+      nixos-enter
+      nixos-generate-config
+      config.services.duplicity-backup.archives.system.script
+    ];
+
+    script = builtins.readFile ./install.sh;
+  };
 
   # This value determines the NixOS release with which your system is to be
   # compatible, in order to avoid breaking some software such as database
