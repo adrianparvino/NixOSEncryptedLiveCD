@@ -1,5 +1,3 @@
-set -x
-
 chvt 7
 
 # Credit to geirha@Freenode#bash
@@ -51,7 +49,9 @@ read -r -d '' CONFIGURATION <<EOF || true
 }
 EOF
 
-CLOSURE=$(nix-build '<nixpkgs/nixos>' --arg configuration "$CONFIGURATION" --no-out-link -A system)
+DRV=$(nix-instantiate '<nixpkgs/nixos>' --arg configuration "$CONFIGURATION" -A system)
+nix build $DRV
+CLOSURE=$(nix-store -q --outputs $DRV)
 nixos-install --system "$CLOSURE"
 
 read -r -d '' CONFIGURATION <<EOF || true
@@ -59,10 +59,12 @@ read -r -d '' CONFIGURATION <<EOF || true
 {
   imports = [ /etc/nixos/configuration.nix ];
 
-  boot.loader.grub.device = lib.mkDefault "/dev/sdb";
+  boot.loader.grub.device = lib.mkDefault "/dev/${DEVICE_NAME}";
 }
 EOF
 
 DRV=$(nixos-enter -- nix-instantiate '<nixpkgs/nixos>' --arg configuration "$CONFIGURATION" -A system)
-CLOSURE=$(nix-build --store /mnt "$DRV")
+DRV=${DRV#/mnt} # Remove /mnt prefix
+nix build --store /mnt $DRV
+CLOSURE=$(nix-store -q --outputs $DRV)
 nixos-install --system "$CLOSURE"

@@ -41,10 +41,10 @@ with lib;
     serviceConfig = {
       StandardInput = "tty";
       StandardOutput = "tty";
-      StandardError = "journal";
+      StandardError = "tty";
       TTYPath = "/dev/tty7";
-      # TTYReset = "yes";
-      # TTYVTDisallocate = true;
+      TTYReset = "yes";
+      TTYVTDisallocate = true;
     };
     environment.NIX_PATH = builtins.concatStringsSep ":" config.nix.nixPath;
 
