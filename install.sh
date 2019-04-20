@@ -29,8 +29,8 @@ DEVICE_NAME=$(dialog --menu "Choose" 0 0 0 "${menu[@]}" 2>&1 1>/dev/tty)
     echo w    # Write changes
 } | fdisk "/dev/${DEVICE_NAME}"
 
-yes n | mkfs.vfat "/dev/${DEVICE_NAME}1"
-yes n | mkfs.ext4 "/dev/${DEVICE_NAME}2"
+yes n | mkfs.vfat "/dev/${DEVICE_NAME}1" || true
+yes n | mkfs.ext4 "/dev/${DEVICE_NAME}2" || true
 
 mkdir -p /mnt
 mount "/dev/${DEVICE_NAME}2" /mnt
@@ -52,7 +52,7 @@ EOF
 DRV=$(nix-instantiate '<nixpkgs/nixos>' --arg configuration "$CONFIGURATION" -A system)
 nix build $DRV
 CLOSURE=$(nix-store -q --outputs $DRV)
-nixos-install --system "$CLOSURE"
+nixos-install --system "$CLOSURE" --no-root-passwd
 
 read -r -d '' CONFIGURATION <<EOF || true
 { lib, ... }:
@@ -66,5 +66,5 @@ EOF
 DRV=$(nixos-enter -- nix-instantiate '<nixpkgs/nixos>' --arg configuration "$CONFIGURATION" -A system)
 DRV=${DRV#/mnt} # Remove /mnt prefix
 nix build --store /mnt $DRV
-CLOSURE=$(nix-store -q --outputs $DRV)
+CLOSURE=$(nix-store --store /mnt -q --outputs $DRV)
 nixos-install --system "$CLOSURE"
