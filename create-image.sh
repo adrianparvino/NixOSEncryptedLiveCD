@@ -79,23 +79,15 @@ fi
 mkfs.vfat "${DISK_IMAGE}1"
 mkfs.ext4 "${DISK_IMAGE}2"
 
-while [ "${BOOT_DEV}" == "" -o "${ROOT_DEV}" == "" ]; do
-    for i in /dev/disk/by-uuid/*; do
-        if [ $(realpath "$i") == "${DISK_IMAGE}1" ]; then
-            BOOT_DEV="$i"
-        elif [ $(realpath "$i") == "${DISK_IMAGE}2" ]; then
-            ROOT_DEV="$i"
-        fi
-    done
-done
+BOOT_DEV="/dev/disk/by-uuid/$(blkid -o value -s UUID "${DISK_IMAGE}1")"
+ROOT_DEV="/dev/disk/by-uuid/$(blkid -o value -s UUID "${DISK_IMAGE}2")"
 
 mkdir -p "$ROOT_MNT"
 STAGEs=( "outmnt" "${STAGEs[@]}" )
 
-mount "${DISK_IMAGE}2" "$ROOT_MNT"
-
+mount "$ROOT_DEV" "$ROOT_MNT"
 mkdir "$ROOT_MNT/boot"
-mount "${DISK_IMAGE}1" "$ROOT_MNT/boot"
+mount "$BOOT_DEV" "$ROOT_MNT/boot"
 
 read -r -d '' CONFIGURATION <<EOF
 {
