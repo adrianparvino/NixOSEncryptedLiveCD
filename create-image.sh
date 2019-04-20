@@ -77,7 +77,7 @@ else
 fi
 
 mkfs.vfat "${DISK_IMAGE}1"
-mkfs.ext4 "${DISK_IMAGE}2"
+mkfs.f2fs "${DISK_IMAGE}2"
 
 BOOT_DEV="/dev/disk/by-uuid/$(blkid -o value -s UUID "${DISK_IMAGE}1")"
 ROOT_DEV="/dev/disk/by-uuid/$(blkid -o value -s UUID "${DISK_IMAGE}2")"

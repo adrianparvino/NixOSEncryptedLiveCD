@@ -19,7 +19,7 @@ with lib;
 
   fileSystems."/" =
     { device = config.rootdevice;
-      fsType = "ext4";
+      fsType = "f2fs";
     };
 
   fileSystems."/boot" =
