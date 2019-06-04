@@ -66,6 +66,9 @@ with lib;
     script = builtins.readFile ./install.sh;
   };
 
+  nix.binaryCaches = [ "http://_gateway:5000" ];
+  nix.requireSignedBinaryCaches = false;
+
   # This value determines the NixOS release with which your system is to be
   # compatible, in order to avoid breaking some software such as database
   # servers. You should change this only after NixOS release notes say you
