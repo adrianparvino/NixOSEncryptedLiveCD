@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-nix-instantiate --find-file restore >/dev/null ||
+nix-instantiate --find-file restore >/dev/null 2>/dev/null ||
     export NIX_PATH=restore=./.${NIX_PATH:+:$NIX_PATH}
 
 STAGEs=()
