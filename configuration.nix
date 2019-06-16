@@ -66,7 +66,7 @@ with lib;
     script = builtins.readFile ./install.sh;
   };
 
-  nix.binaryCaches = [ "http://_gateway:5000" ];
+  nix.binaryCaches = [ "http://_gateway:5000" "https://cache.nixos.org" ];
   nix.requireSignedBinaryCaches = false;
 
   # This value determines the NixOS release with which your system is to be
