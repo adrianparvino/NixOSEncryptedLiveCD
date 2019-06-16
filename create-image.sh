@@ -110,7 +110,7 @@ read -r -d '' CONFIGURATION <<EOF
 EOF
 
 DRVs=$(nix-instantiate '<nixpkgs/nixos>' -A system --arg configuration "$CONFIGURATION")
-nix build $DRVs
+nix build $DRVs --no-link
 CLOSURE="$(nix-store -q --outputs $DRVs)" #-I nixpkgs/nixos=nixos
 
 grub-install --target=i386-pc --boot-directory "$ROOT_MNT/boot" "$out"
