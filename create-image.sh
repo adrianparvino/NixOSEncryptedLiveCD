@@ -8,22 +8,30 @@ STAGEs=()
 formatImage()
 {
     {
-        echo o      # Create a new empty GPT partition table
+        echo g      # Create a new empty GPT partition table
 
         echo n      # Add a new partition
-        echo p      # Primary
-        echo 1      # Partition number for /boot
+        echo        # Partition number for BIOS boot
+        echo        # First sector (default)
+        echo +1M    # Last sector
+
+        echo n      # Add a new partition
+        echo        # Partition number for /boot
         echo        # First sector (default)
         echo +128M  # Last sector
 
         echo n      # Add a new partition
-        echo p      # Primary
-        echo 2      # Partition number for /
+        echo        # Partition number for /
         echo        # First sector (default)
         echo        # Last sector (default)
 
-        echo a      # Add bootable flag
-        echo 1      # to the boot partition
+        echo t
+        echo 1
+        echo 4
+
+        echo t
+        echo 2
+        echo 1
 
         echo w      # Write changes
     } | fdisk "$out"
@@ -74,15 +82,15 @@ else
     STAGEs=( "losetup" "${STAGEs[@]}" )
 
     ROOT_MNT="${out}mnt"
+    mkdir -p "$ROOT_MNT"
 fi
 
-mkfs.vfat "${DISK_IMAGE}1"
-mkfs.f2fs "${DISK_IMAGE}2"
+mkfs.vfat "${DISK_IMAGE}2"
+mkfs.f2fs "${DISK_IMAGE}3"
 
-BOOT_DEV="/dev/disk/by-uuid/$(blkid -o value -s UUID "${DISK_IMAGE}1")"
-ROOT_DEV="/dev/disk/by-uuid/$(blkid -o value -s UUID "${DISK_IMAGE}2")"
+BOOT_DEV="/dev/disk/by-uuid/$(blkid -o value -s UUID "${DISK_IMAGE}2")"
+ROOT_DEV="/dev/disk/by-uuid/$(blkid -o value -s UUID "${DISK_IMAGE}3")"
 
-mkdir -p "$ROOT_MNT"
 STAGEs=( "outmnt" "${STAGEs[@]}" )
 
 mount "$ROOT_DEV" "$ROOT_MNT"

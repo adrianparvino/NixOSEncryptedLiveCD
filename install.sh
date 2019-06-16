@@ -9,33 +9,41 @@ done < <(lsblk -dn -o NAME,SIZE,MODEL)
 DEVICE_NAME=$(dialog --menu "Choose" 0 0 0 "${menu[@]}" 2>&1 1>/dev/tty)
 
 {
-    echo o    # Create a new empty GPT partition table
+    echo g      # Create a new empty GPT partition table
 
-    echo n    # Add a new partition
-    echo p    # Primary
-    echo 1    # Partition number for /boot
-    echo      # First sector (default)
-    echo +1G  # Last sector
+    echo n      # Add a new partition
+    echo        # Partition number for BIOS boot
+    echo        # First sector (default)
+    echo +1M    # Last sector
 
-    echo n    # Add a new partition
-    echo p    # Primary
-    echo 2    # Partition number for /
-    echo      # First sector (default)
-    echo      # Last sector (default)
+    echo n      # Add a new partition
+    echo        # Partition number for /boot
+    echo        # First sector (default)
+    echo +128M  # Last sector
 
-    echo a    # Add bootable flag
-    echo 1    # to the boot partition
+    echo n      # Add a new partition
+    echo        # Partition number for /
+    echo        # First sector (default)
+    echo        # Last sector (default)
 
-    echo w    # Write changes
+    echo t
+    echo 1
+    echo 4
+
+    echo t
+    echo 2
+    echo 1
+
+    echo w      # Write changes
 } | fdisk "/dev/${DEVICE_NAME}"
 
-yes n | mkfs.vfat "/dev/${DEVICE_NAME}1" || true
-yes n | mkfs.ext4 "/dev/${DEVICE_NAME}2" || true
+yes n | mkfs.vfat "/dev/${DEVICE_NAME}2" || true
+yes n | mkfs.ext4 "/dev/${DEVICE_NAME}3" || true
 
 mkdir -p /mnt
-mount "/dev/${DEVICE_NAME}2" /mnt
+mount "/dev/${DEVICE_NAME}3" /mnt
 mkdir /mnt/boot
-mount "/dev/${DEVICE_NAME}1" /mnt/boot
+mount "/dev/${DEVICE_NAME}2" /mnt/boot
 
 duplicity-restore-system
 
@@ -67,4 +75,4 @@ DRV=$(nixos-enter -- nix-instantiate '<nixpkgs/nixos>' --arg configuration "$CON
 DRV=${DRV#/mnt} # Remove /mnt prefix
 nix build --store /mnt $DRV
 CLOSURE=$(nix-store --store /mnt -q --outputs $DRV)
-nixos-install --system "$CLOSURE"
+nixos-install --system "$CLOSURE" --no-root-passwd
