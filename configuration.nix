@@ -18,12 +18,12 @@ with lib;
   services.duplicity-backup.target = "/mnt";
 
   fileSystems."/" =
-    { device = config.rootdevice;
+    { device = config.NixOSEncryptedLiveCD.rootdevice;
       fsType = "f2fs";
     };
 
   fileSystems."/boot" =
-    { device = config.bootdevice;
+    { device = config.NixOSEncryptedLiveCD.bootdevice;
       fsType = "vfat";
     };
 
@@ -43,9 +43,11 @@ with lib;
       StandardOutput = "tty";
       StandardError = "tty";
       TTYPath = "/dev/tty7";
+    } // lib.optionalAttrs (!config.NixOSEncryptedLiveCD.debug) {
       TTYReset = "yes";
       TTYVTDisallocate = true;
     };
+
     environment.NIX_PATH = builtins.concatStringsSep ":" config.nix.nixPath;
 
     path = with pkgs; let

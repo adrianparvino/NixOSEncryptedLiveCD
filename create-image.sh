@@ -104,8 +104,8 @@ read -r -d '' CONFIGURATION <<EOF
       /etc/nixos/duplicity-backup-config.nix
     ];
 
-  rootdevice="$ROOT_DEV";
-  bootdevice="$BOOT_DEV";
+  NixOSEncryptedLiveCD.rootdevice="$ROOT_DEV";
+  NixOSEncryptedLiveCD.bootdevice="$BOOT_DEV";
 }
 EOF
 
