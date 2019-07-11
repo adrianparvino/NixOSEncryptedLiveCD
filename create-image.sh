@@ -5,6 +5,14 @@ nix-instantiate --find-file restore >/dev/null 2>/dev/null ||
 
 STAGEs=()
 
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --debug)
+            DEBUG=
+    esac
+    shift
+done
+
 formatImage()
 {
     {
@@ -104,8 +112,10 @@ read -r -d '' CONFIGURATION <<EOF
       /etc/nixos/duplicity-backup-config.nix
     ];
 
-  NixOSEncryptedLiveCD.rootdevice="$ROOT_DEV";
-  NixOSEncryptedLiveCD.bootdevice="$BOOT_DEV";
+  NixOSEncryptedLiveCD.rootdevice = "$ROOT_DEV";
+  NixOSEncryptedLiveCD.bootdevice = "$BOOT_DEV";
+
+  ${DEBUG+NixOSEncryptedLiveCD.debug = true;}
 }
 EOF
 
