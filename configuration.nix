@@ -71,6 +71,11 @@ with lib;
   nix.binaryCaches = [ "http://_gateway:5000" "https://cache.nixos.org" ];
   nix.requireSignedBinaryCaches = false;
 
+  nixpkgs.config.packageOverrides = pkgs: with pkgs; {
+    pinentry = pinentry_ncurses;
+    duplicity = duplicity.overrideAttrs ({propagatedBuildInputs, ...}: { propagatedBuildInputs = lib.filter (x: x != pkgs.python2Packages.pygobject3) propagatedBuildInputs; });
+  };
+
   # This value determines the NixOS release with which your system is to be
   # compatible, in order to avoid breaking some software such as database
   # servers. You should change this only after NixOS release notes say you

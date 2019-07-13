@@ -26,7 +26,7 @@ formatImage()
         echo n      # Add a new partition
         echo        # Partition number for /boot
         echo        # First sector (default)
-        echo +128M  # Last sector
+        echo +64M   # Last sector
 
         echo n      # Add a new partition
         echo        # Partition number for /
@@ -80,7 +80,7 @@ elif [ -f "$out" ]; then
     exit 1
 # If $out is not a block device, and doesn't exist, then create it
 else
-    truncate -s 8G "$out"
+    truncate -s 4GB "$out"
     formatImage
     # TODO, add encryption
     LOOP_DEVICE="$(losetup --show -f "$out")"
