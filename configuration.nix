@@ -17,6 +17,11 @@ with lib;
   services.duplicity-backup.enableRestore = true;
   services.duplicity-backup.target = "/mnt";
 
+  environment.etc."wpa_supplicant.conf".text = ''
+    ctrl_interface=/var/run/wpa_supplicant
+    update_config=1
+  '';
+
   fileSystems."/" =
     { device = config.NixOSEncryptedLiveCD.rootdevice;
       fsType = "f2fs";
@@ -29,6 +34,9 @@ with lib;
 
   boot.loader.grub.enable = true;
   boot.loader.grub.device = "nodev";
+
+  networking.nameservers = [ "8.8.8.8" "1.1.1.1" ];
+  networking.wireless.enable = true;
 
   users.users.root.initialHashedPassword = "";
 
@@ -43,32 +51,41 @@ with lib;
       StandardOutput = "tty";
       StandardError = "tty";
       TTYPath = "/dev/tty7";
-    } // lib.optionalAttrs (!config.NixOSEncryptedLiveCD.debug) {
+    } // lib.optionalAttrs (config.NixOSEncryptedLiveCD.debug != null) {
       TTYReset = "yes";
       TTYVTDisallocate = true;
     };
 
-    environment.NIX_PATH = builtins.concatStringsSep ":" config.nix.nixPath;
+    environment = {
+      NIX_PATH = builtins.concatStringsSep ":" config.nix.nixPath;
+    } // lib.optionalAttrs (config.NixOSEncryptedLiveCD.debug != null) {
+      DEBUG = config.NixOSEncryptedLiveCD.debug;
+    };
 
     path = with pkgs; let
       inherit (config.system.build) nixos-install nixos-enter nixos-generate-config;
     in [
-      kbd
       dialog
-      utillinux
       dosfstools
       e2fsprogs
+      iproute
+      kbd
       nix
-      nixos-install
       nixos-enter
       nixos-generate-config
+      nixos-install
+      utillinux
+      wpa_supplicant
+
       config.services.duplicity-backup.archives.system.script
     ];
 
     script = builtins.readFile ./install.sh;
   };
 
-  nix.binaryCaches = [ "http://_gateway:5000" "https://cache.nixos.org" ];
+  nix.binaryCaches = [
+    "https://cache.nixos.org"
+  ] ++ lib.optional (config.NixOSEncryptedLiveCD.debug != null) config.NixOSEncryptedLiveCD.debug;
   nix.requireSignedBinaryCaches = false;
 
   nixpkgs.config.packageOverrides = pkgs: with pkgs; {

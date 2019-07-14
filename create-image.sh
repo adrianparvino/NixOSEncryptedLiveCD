@@ -8,7 +8,8 @@ STAGEs=()
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --debug)
-            DEBUG=
+            shift
+            DEBUG="$1"
     esac
     shift
 done
@@ -118,7 +119,7 @@ read -r -d '' CONFIGURATION <<EOF
   NixOSEncryptedLiveCD.rootdevice = "$ROOT_DEV";
   NixOSEncryptedLiveCD.bootdevice = "$BOOT_DEV";
 
-  ${DEBUG+NixOSEncryptedLiveCD.debug = true;}
+  ${DEBUG+NixOSEncryptedLiveCD.debug = ''$DEBUG'';}
 }
 EOF
 

@@ -12,8 +12,8 @@ with lib;
     };
 
     debug = mkOption {
-      type = types.bool;
-      default = false;
+      type = types.nullOr types.string;
+      default = null;
     };
   };
 }

@@ -1,5 +1,26 @@
 chvt 7
 
+until ip route | grep default; do
+    wpa_cli scan on
+    menu=()
+    while read -r bssid frequency signal_level flags ssid; do
+        menu+=( "$ssid" "$bssid $frequency $signal_level $flags" )
+    done < <(wpa_cli scan_results | tail -n +3)
+    menu+=( "rescan" "" )
+    SSID=$(dialog --menu "Network Name" 0 0 0 "${menu[@]}" 2>&1 1>/dev/tty)
+    SSID=${SSID:-rescan}
+    if [ "$SSID" = "rescan" ]; then
+        continue
+    fi
+    PSK=$(dialog --inputbox "Password" 0 0 2>&1 1>/dev/tty)
+    NETWORK=$(wpa_cli add_network | tail -n1)
+    wpa_cli set_network $NETWORK ssid "\"$SSID\"" >/dev/null
+    wpa_cli set_network $NETWORK psk "\"$PSK\"" >/dev/null
+    wpa_cli enable_network $NETWORK >/dev/null
+    sleep 10
+done
+wpa_cli scan off || true
+
 # Credit to geirha@Freenode#bash
 menu=()
 while read -r name size model; do
@@ -53,6 +74,9 @@ read -r -d '' CONFIGURATION <<EOF || true
 {
   imports = [ /mnt/etc/nixos/hardware-configuration.nix ];
 
+  nix.binaryCaches = [ "https://cache.nixos.org" ${DEBUG+''$DEBUG''} ];
+  nix.requireSignedBinaryCaches = false;
+
   boot.loader.grub.device = "nodev";
 }
 EOF
@@ -60,12 +84,14 @@ EOF
 DRV=$(nix-instantiate '<nixpkgs/nixos>' --arg configuration "$CONFIGURATION" -A system)
 nix build $DRV
 CLOSURE=$(nix-store -q --outputs $DRV)
-nixos-install --system "$CLOSURE" --no-root-passwd
+nixos-install --system "$CLOSURE" --no-bootloader --no-root-passwd
 
 read -r -d '' CONFIGURATION <<EOF || true
 { lib, ... }:
 {
   imports = [ /etc/nixos/configuration.nix ];
+
+  services.duplicity-backup.enableRestore = true;
 
   boot.loader.grub.device = lib.mkDefault "/dev/${DEVICE_NAME}";
 }
@@ -82,3 +108,5 @@ DRV=$(nixos-enter -- nix-instantiate '<nixpkgs/nixos>' --arg configuration "$CON
 nix build --store /mnt $DRV
 CLOSURE=$(nix-store --store /mnt -q --outputs $DRV)
 nixos-install --system "$CLOSURE" --no-root-passwd
+
+cp --parents -r /var/keys/duplicity /mnt
