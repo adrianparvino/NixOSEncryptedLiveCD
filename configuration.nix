@@ -14,6 +14,8 @@ with lib;
       ./args.nix
     ];
 
+  services.duplicity-system.restorationImage = true;
+
   services.duplicity-backup.enableRestore = true;
   services.duplicity-backup.target = "/mnt";
 
