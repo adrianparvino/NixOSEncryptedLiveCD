@@ -71,8 +71,14 @@ read -r -d '' CONFIGURATION <<EOF || true
 }
 EOF
 
+# Some Nix operations require /tmp to function
+mkdir -p /mnt/tmp
+
+# Some nix operations require /tmp to function
+mkdir -p /mnt/var/run/nscd
+mount --bind /var/run/nscd /mnt/var/run/nscd
+
 DRV=$(nixos-enter -- nix-instantiate '<nixpkgs/nixos>' --arg configuration "$CONFIGURATION" -A system)
-DRV=${DRV#/mnt} # Remove /mnt prefix
 nix build --store /mnt $DRV
 CLOSURE=$(nix-store --store /mnt -q --outputs $DRV)
 nixos-install --system "$CLOSURE" --no-root-passwd
