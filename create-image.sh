@@ -71,7 +71,7 @@ out="${out:-result}"
 # If $out is a block device, do nothing
 if [ -b "$out" ]; then
     formatImage
-    DISK_IMAGE="$out"
+    DISK="$out"
 
     ROOT_MNT=$(mktemp -d)
 # If $out is not a block device, but it exists, then abort
@@ -86,18 +86,21 @@ else
     LOOP_DEVICE="$(losetup --show -f "$out")"
     # Temporary fix for https://github.com/torvalds/linux/commit/628bd85947091830a8c4872adfd5ed1d515a9cf2
     partx -u $LOOP_DEVICE
-    DISK_IMAGE="${LOOP_DEVICE}p"
+
+    DISK="${LOOP_DEVICE}"
+    SEP=p
+
     STAGEs=( "losetup" "${STAGEs[@]}" )
 
     ROOT_MNT="${out}mnt"
     mkdir -p "$ROOT_MNT"
 fi
 
-mkfs.vfat "${DISK_IMAGE}2"
-mkfs.f2fs "${DISK_IMAGE}3"
+mkfs.vfat "${DISK}${SEP}2"
+mkfs.f2fs "${DISK}${SEP}3"
 
-BOOT_DEV="/dev/disk/by-uuid/$(blkid -o value -s UUID "${DISK_IMAGE}2")"
-ROOT_DEV="/dev/disk/by-uuid/$(blkid -o value -s UUID "${DISK_IMAGE}3")"
+BOOT_DEV="/dev/disk/by-uuid/$(blkid -o value -s UUID "${DISK}${SEP}2")"
+ROOT_DEV="/dev/disk/by-uuid/$(blkid -o value -s UUID "${DISK}${SEP}3")"
 
 STAGEs=( "outmnt" "${STAGEs[@]}" )
 
@@ -123,7 +126,7 @@ DRVs=$(nix-instantiate '<nixpkgs/nixos>' -A system --arg configuration "$CONFIGU
 nix build $DRVs --no-link
 CLOSURE="$(nix-store -q --outputs $DRVs)" #-I nixpkgs/nixos=nixos
 
-grub-install --target=i386-pc --boot-directory "$ROOT_MNT/boot" "$out"
+grub-install --target=i386-pc --boot-directory "$ROOT_MNT/boot" "$DISK"
 nixos-install --system "$CLOSURE" --root $(realpath "$ROOT_MNT") --no-root-passwd
 
 cp --parents -r /var/keys/duplicity "$ROOT_MNT"
