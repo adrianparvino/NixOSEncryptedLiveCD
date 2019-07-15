@@ -53,7 +53,7 @@ with lib;
       StandardOutput = "tty";
       StandardError = "tty";
       TTYPath = "/dev/tty7";
-    } // lib.optionalAttrs (config.NixOSEncryptedLiveCD.debug != null) {
+    } // lib.optionalAttrs (config.NixOSEncryptedLiveCD.debug == null) {
       TTYReset = "yes";
       TTYVTDisallocate = true;
     };
