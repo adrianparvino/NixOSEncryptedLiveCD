@@ -5,8 +5,23 @@ nix-instantiate --find-file restore >/dev/null 2>/dev/null ||
 
 STAGEs=()
 
+usage()
+{
+    cat <<EOF
+create-image.sh [--help] [--debug remote_store]
+
+where:
+    --help   show this help text
+    --debug  enable debugging and add remote_store to substituters
+EOF
+}
+
 while [ "$#" -gt 0 ]; do
     case "$1" in
+        --help)
+            usage
+            exit
+            ;;
         --debug)
             shift
             DEBUG="$1"
