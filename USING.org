@@ -1,0 +1,43 @@
+#+TITLE: NixOSEncryptedLiveCD
+* Prerequisites and installation
+
+  This document assumes that you have successfully installed ~nix-duplicity-backup~.
+  Add the following to your ~duplicity-backup-config.nix~:
+#+BEGIN_src nix
+  {
+    # Add default files for a system backup
+    imports = [ <nix-duplicity-backup/duplicity-system.nix ];
+
+    services.duplicity-system.destination = s3://s3.REGION.amazonaws.com/BUCKET/system;
+    services.duplicity-system.extraFiles = [
+      # Nixpkgs configuration
+      /etc/nix/nixpkgs-config.nix
+
+      # IMPORTANT out-of-tree duplicity-system files
+      ./duplicity-backup-config.nix # The config itself
+      <NixOSEncryptedLiveCD>
+    ];
+  }
+#+END_src
+
+  Modify your ~configuration.nix~ to contain the following:
+#+BEGIN_src nix
+  {
+    imports = [
+      # Add create-image.sh to PATH
+      <NixOSEncryptedLiveCD/module.nix>
+    ] ++ lib.optional (builtins.pathExists ./system-specific.nix) ./system-specific.nix;
+
+
+  }
+#+END_src
+
+  The most probable configuration to add to ~system-specific.nix~ are:
+  - ~boot~
+  - ~networking.defaultgateway~
+  - ~networking.dhcpcd.enable = false;~
+  - ~networking.interfaces~
+  - ~services.xserver.videodrivers~
+
+  However, keep the following configuration in your ~configuration.nix~:
+  - ~boot.supportedFilesystems~
