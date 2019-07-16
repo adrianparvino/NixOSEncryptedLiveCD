@@ -59,10 +59,12 @@ DEVICE_NAME=$(dialog --menu "Choose" 0 0 0 "${menu[@]}" 2>&1 1>/dev/tty)
 } | fdisk "/dev/${DEVICE_NAME}"
 
 yes n | mkfs.vfat "/dev/${DEVICE_NAME}2" || true
-yes n | mkfs.ext4 "/dev/${DEVICE_NAME}3" || true
+cryptsetup luksFormat "/dev/${DEVICE_NAME}3"
+cryptsetup luksOpen "/dev/${DEVICE_NAME}3" root
+mkfs.ext4 /dev/mapper/root
 
 mkdir -p /mnt
-mount "/dev/${DEVICE_NAME}3" /mnt
+mount "/dev/mapper/root" /mnt
 mkdir /mnt/boot
 mount "/dev/${DEVICE_NAME}2" /mnt/boot
 

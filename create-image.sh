@@ -54,7 +54,10 @@ atexit ()
                 losetup -d "$LOOP_DEVICE"
                 ;;
             "outmnt"):
-                umount -R "$ROOT_MNT"
+                umount "$ROOT_MNT/boot"
+                umount "$ROOT_MNT"
+                cryptsetup close "$LUKS_NAME"
+                rmdir "$ROOT_MNT/boot"
                 rmdir "$ROOT_MNT"
                 ;;
             *):
@@ -75,6 +78,7 @@ if [ -b "$out" ]; then
     DISK="$out"
 
     ROOT_MNT=$(mktemp -d)
+    LUKS_NAME="$(basename "$ROOT_MNT")_root"
 # If $out is not a block device, but it exists, then abort
 elif [ -f "$out" ]; then
     printf "%s already exists! Exiting." "$out"
@@ -83,6 +87,7 @@ elif [ -f "$out" ]; then
 else
     truncate -s 4GB "$out"
     formatImage
+    STAGEs=( "losetup" "${STAGEs[@]}" )
     # TODO, add encryption
     LOOP_DEVICE="$(losetup --show -f "$out")"
     # Temporary fix for https://github.com/torvalds/linux/commit/628bd85947091830a8c4872adfd5ed1d515a9cf2
@@ -91,17 +96,19 @@ else
     DISK="${LOOP_DEVICE}"
     SEP=p
 
-    STAGEs=( "losetup" "${STAGEs[@]}" )
-
     ROOT_MNT="${out}mnt"
     mkdir -p "$ROOT_MNT"
+    LUKS_NAME="$(basename "$out")_root"
 fi
 
 mkfs.vfat "${DISK}${SEP}2"
-mkfs.f2fs "${DISK}${SEP}3"
+cryptsetup luksFormat "${DISK}${SEP}3"
+cryptsetup luksOpen "${DISK}${SEP}3" "$LUKS_NAME"
+mkfs.ext4 "/dev/mapper/$LUKS_NAME"
 
 BOOT_DEV="/dev/disk/by-uuid/$(blkid -o value -s UUID "${DISK}${SEP}2")"
-ROOT_DEV="/dev/disk/by-uuid/$(blkid -o value -s UUID "${DISK}${SEP}3")"
+ROOT_DEV="/dev/mapper/$LUKS_NAME"
+ENC_ROOT_DEV="/dev/disk/by-uuid/$(blkid -o value -s UUID "${DISK}${SEP}3")"
 
 STAGEs=( "outmnt" "${STAGEs[@]}" )
 
@@ -118,6 +125,15 @@ read -r -d '' CONFIGURATION <<EOF
 
   NixOSEncryptedLiveCD.rootdevice = "$ROOT_DEV";
   NixOSEncryptedLiveCD.bootdevice = "$BOOT_DEV";
+
+  boot.initrd.luks.devices = [
+    {
+      name = "$LUKS_NAME";
+      device = "$ENC_ROOT_DEV";
+      preLVM = true;
+      allowDiscards = true;
+    }
+  ];
 
   ${DEBUG+NixOSEncryptedLiveCD.debug = ''$DEBUG'';}
 }

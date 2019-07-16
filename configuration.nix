@@ -26,7 +26,7 @@ with lib;
 
   fileSystems."/" =
     { device = config.NixOSEncryptedLiveCD.rootdevice;
-      fsType = "f2fs";
+      fsType = "ext4";
     };
 
   fileSystems."/boot" =
@@ -67,6 +67,7 @@ with lib;
     path = with pkgs; let
       inherit (config.system.build) nixos-install nixos-enter nixos-generate-config;
     in [
+      cryptsetup
       dialog
       dosfstools
       e2fsprogs
