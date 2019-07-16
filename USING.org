@@ -41,3 +41,26 @@
 
   However, keep the following configuration in your ~configuration.nix~:
   - ~boot.supportedFilesystems~
+
+* Creating a backup image
+
+  In this section, we will be creating an image and testing it under QEMU.
+  First, create a Bash environment containing ~nix-serve~ and ~qemu_kvm~:
+#+BEGIN_src bash
+  nix run nixpkgs.nix-serve nixpkgs.qemu_kvm
+#+END_src
+  Under the nix environment, run the following:
+#+BEGIN_src bash
+  nix-serve &
+  NIX_SERVE_PID=$!
+  truncate -s 8G testdisk
+  sudo create-image.sh --debug _gateway:5000
+  sudo qemu-system-x86_64 -enable
+  kill $!
+#+END_src
+
+  If backups were successful, flash the file to an external drive:
+#+BEGIN_src bash
+  sudo create-image.sh
+  sudo dd if=result of=/dev/sdX status=progress
+#+END_src
