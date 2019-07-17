@@ -70,11 +70,12 @@
   NIX_SERVE_PID=$!
   truncate -s 8G testdisk
   sudo create-image.sh --debug _gateway:5000
-  sudo qemu-system-x86_64 -enable
+  sudo qemu-kvm -m 2048 -smp 2 -hda ./result -hdb ./testdisk
   kill $!
 #+END_src
 
-  If backups were successful, flash the file to an external drive:
+  If backups were successful, you can directly flash the file, or
+  create a new file with debug disabled to an external drive:
 #+BEGIN_src bash
   sudo create-image.sh
   sudo dd if=result of=/dev/sdX status=progress
