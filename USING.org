@@ -6,17 +6,9 @@
 #+BEGIN_src nix
   {
     # Add default files for a system backup
-    imports = [ <nix-duplicity-backup/duplicity-system.nix ];
+    imports = [ <nix-duplicity-backup/duplicity-system.nix> ];
 
     services.duplicity-system.destination = s3://s3.REGION.amazonaws.com/BUCKET/system;
-    services.duplicity-system.extraFiles = [
-      # Nixpkgs configuration
-      /etc/nix/nixpkgs-config.nix
-
-      # IMPORTANT out-of-tree duplicity-system files
-      ./duplicity-backup-config.nix # The config itself
-      <NixOSEncryptedLiveCD>
-    ];
   }
 #+END_src
 
@@ -27,8 +19,6 @@
       # Add create-image.sh to PATH
       <NixOSEncryptedLiveCD/module.nix>
     ] ++ lib.optional (builtins.pathExists ./system-specific.nix) ./system-specific.nix;
-
-
   }
 #+END_src
 
