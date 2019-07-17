@@ -91,34 +91,24 @@ trap atexit EXIT
 # If $out is unset or empty, out=result
 out="${out:-result}"
 
-# If $out is a block device, do nothing
-if [ -b "$out" ]; then
-    formatImage
-    DISK="$out"
-
-    ROOT_MNT=$(mktemp -d)
-    LUKS_NAME="$(basename "$ROOT_MNT")_root"
-# If $out is not a block device, but it exists, then abort
-elif [ -f "$out" ]; then
+if [ -f "$out" ]; then
     printf "%s already exists! Exiting." "$out"
     exit 1
-# If $out is not a block device, and doesn't exist, then create it
-else
-    truncate -s 4GB "$out"
-    formatImage
-    STAGEs=( "losetup" "${STAGEs[@]}" )
-    # TODO, add encryption
-    LOOP_DEVICE="$(losetup --show -f "$out")"
-    # Temporary fix for https://github.com/torvalds/linux/commit/628bd85947091830a8c4872adfd5ed1d515a9cf2
-    partx -u $LOOP_DEVICE
-
-    DISK="${LOOP_DEVICE}"
-    SEP=p
-
-    ROOT_MNT="${out}mnt"
-    mkdir -p "$ROOT_MNT"
-    LUKS_NAME="$(basename "$out")_root"
 fi
+
+truncate -s 4GB "$out"
+formatImage
+STAGEs=( "losetup" "${STAGEs[@]}" )
+LOOP_DEVICE="$(losetup --show -f "$out")"
+# Temporary fix for https://github.com/torvalds/linux/commit/628bd85947091830a8c4872adfd5ed1d515a9cf2
+partx -u $LOOP_DEVICE
+
+DISK="${LOOP_DEVICE}"
+SEP=p
+
+ROOT_MNT="${out}mnt"
+mkdir -p "$ROOT_MNT"
+LUKS_NAME="$(basename "$out")_root"
 
 mkfs.vfat "${DISK}${SEP}2"
 cryptsetup luksFormat "${DISK}${SEP}3"
