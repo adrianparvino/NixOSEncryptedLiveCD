@@ -57,6 +57,12 @@
   }
 #+END_src
 
+  Rebuild and upload your first system archive:
+#+BEGIN_src bash
+  nixos-rebuild switch
+  systemctl start duplicity-system
+#+END_src
+
 * Creating a backup image
 
   In this section, we will be creating an image and testing it under QEMU.
