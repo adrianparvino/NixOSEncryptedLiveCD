@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 nix-instantiate --find-file restore >/dev/null 2>/dev/null ||
     export NIX_PATH=restore=./.${NIX_PATH:+:$NIX_PATH}
 
@@ -63,6 +65,8 @@ formatImage()
 
 atexit ()
 {
+    set +e
+
     while (( ${#STAGEs[@]} )); do
         case ${STAGEs[0]} in
             "losetup"):
@@ -131,7 +135,7 @@ mount "$ROOT_DEV" "$ROOT_MNT"
 mkdir "$ROOT_MNT/boot"
 mount "$BOOT_DEV" "$ROOT_MNT/boot"
 
-read -r -d '' CONFIGURATION <<EOF
+read -r -d '' CONFIGURATION <<EOF || true
 {
   imports =
     [ <restore/configuration.nix>
