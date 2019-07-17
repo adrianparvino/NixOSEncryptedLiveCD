@@ -91,8 +91,8 @@ trap atexit EXIT
 # If $out is unset or empty, out=result
 out="${out:-result}"
 
-if [ -f "$out" ]; then
-    printf "%s already exists! Exiting." "$out"
+if [ -e "$out" ]; then
+    printf '%s already exists! Exiting.' "$out"
     exit 1
 fi
 
@@ -109,6 +109,11 @@ SEP=p
 ROOT_MNT="${out}mnt"
 mkdir -p "$ROOT_MNT"
 LUKS_NAME="$(basename "$out")_root"
+
+if [ -e "/dev/mapper/$LUKS_NAME" ]; then
+    printf '%s is a currently used LUKS name! Exiting.' "$LUKS_NAME"
+    exit 2
+fi
 
 mkfs.vfat "${DISK}${SEP}2"
 cryptsetup luksFormat "${DISK}${SEP}3"
