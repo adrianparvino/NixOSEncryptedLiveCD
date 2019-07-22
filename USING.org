@@ -1,7 +1,7 @@
 #+TITLE: NixOSEncryptedLiveCD
 * Prerequisites and installation
 
-  This document assumes that you have successfully installed ~nix-duplicity-backup~.
+  This document assumes that you have successfully installed ~nix-duplicity-backup~ [fn:nix-duplicity-backup].
   Add the following to your ~duplicity-backup-config.nix~:
 #+BEGIN_src nix
   {
@@ -86,3 +86,7 @@
   sudo create-image.sh
   sudo dd if=result of=/dev/sdX status=progress
 #+END_src
+
+* References
+
+[fn:nix-duplicity-backup] https://github.com/adrianparvino/nix-duplicity-backup/
