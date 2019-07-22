@@ -87,6 +87,25 @@
   sudo dd if=result of=/dev/sdX status=progress
 #+END_src
 
+* Configuration
+
+  More granular configurations are possible:
+#+BEGIN_src nix
+  {
+    # Ensure that nix-duplicity-backup and NixOSEncryptedLiveCD will never be excluded
+    services.duplicity-system.includes = [
+      <nix-duplicity-backup>
+      <NixOSEncryptedLiveCD>
+    ];
+
+    # Do not backup /home
+    services.duplicity-system.extraExcludes = [
+      /home
+    ];
+  }
+#+END_src
+
+
 * References
 
 [fn:nix-duplicity-backup] https://github.com/adrianparvino/nix-duplicity-backup/
